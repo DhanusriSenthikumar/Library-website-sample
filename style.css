@@ -1,0 +1,84 @@
+
+body {
+font-family: 'Roboto', sans-serif; /* Changed font to Roboto */
+margin: 0;
+padding: 0;
+background: #f0f0f0; /* Changed background color */
+}
+
+header {
+background-color: #333; /* Darkened header background */
+color: #fff; /* Changed text color to white */
+text-align: center;
+padding: 20px 0;
+}
+
+h1 {
+color: #5303f3;
+margin: 0;
+font-size: 28px; /* Increased font size */
+}
+
+h2 {
+color: #0aec0a;
+margin: 0;
+}
+
+.container {
+margin: 20px auto; /* Centered container */
+background-color: #fff;
+border: 1px solid #ddd;
+border-radius: 8px;
+padding: 20px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+input[type="text"], button {
+margin-bottom: 15px;
+padding: 12px;
+box-sizing: border-box;
+width: 100%;
+border: 1px solid #ccc;
+border-radius: 5px;
+font-size: 16px;
+}
+
+button {
+cursor: pointer;
+transition: background-color 0.3s ease;
+background-color: #4CAF50;
+color: white;
+}
+
+button:hover {
+background-color: #45a049;
+}
+
+ul {
+list-style: none;
+padding: 0;
+margin: 0;
+}
+
+li {
+margin-bottom: 10px;
+font-size: 16px;
+}
+
+#container {
+display: flex;
+justify-content: space-around;
+flex-wrap: wrap;
+}
+
+#searchResults, #patronList {
+margin-top: 20px;
+}
+
+/* Media query for responsive layout */
+@media (max-width: 768px) {
+.container {
+width: 90%; /* Adjusted container width for smaller screens */
+}
+}
+

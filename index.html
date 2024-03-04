@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body style="margin: 0; padding: 0; background: url('login.jpg') no-repeat center center fixed; background-size: cover;">
+  <h1>Library Management System</h1>
+  
+  <div id="container">
+    <div class="container" id="search">
+      <h2>Search Books</h2>
+      <input type="text" id="searchInput" placeholder="Search by title, author, or ISBN">
+      <button id="searchButton">Search</button>
+      <div id="searchResults"></div>
+    </div>
+
+    <div class="container" id="patronManagement">
+      <h2>Patron Management</h2>
+      <form id="addPatronForm">
+        <label for="patronName">Name:</label>
+        <input type="text" id="patronName" required>
+        <label for="patronID">ID:</label>
+        <input type="text" id="patronID" required>
+        <button type="submit">Add Patron</button>
+      </form>
+      <div id="patronList"></div>
+    </div>
+  </div>
+
+  <div id="bookOperations" class="container">
+    <h2>Add or Remove a Book</h2>
+    <div id="books"></div>
+
+    <h3>Add a Book</h3>
+    <form id="addBookForm">
+      <label for="bookTitle">Title:</label>
+      <input type="text" id="bookTitle" required>
+      <label for="bookAuthor">Author:</label>
+      <input type="text" id="bookAuthor" required>
+      <label for="bookIsbn">ISBN:</label>
+      <input type="text" id="bookIsbn" required>
+      <button type="submit">Add Book</button>
+    </form>
+
+    <h3>Remove a Book</h3>
+    <form id="removeBookForm">
+      <label for="isbnToRemove">Enter ISBN to remove:</label>
+      <input type="text" id="isbnToRemove" required>
+      <button type="submit">Remove Book</button>
+    </form>
+  </div>
+  <script>
+    // Book class
+    class Book {
+      constructor(title, author, isbn) {
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.borrowed = false;
+        this.reservedBy = null;
+      }
+
+      reserve(patronID) {
+        if (!this.borrowed && !this.reservedBy) {
+          this.reservedBy = patronID;
+          return true;
+        }
+        return false;
+      }
+
+      borrow() {
+        if (!this.borrowed && !this.reservedBy) {
+          this.borrowed = true;
+          return true;
+        }
+        return false;
+      }
+
+      returnBook() {
+        if (this.borrowed) {
+          this.borrowed = false;
+          this.reservedBy = null;
+          return true;
+        }
+        return false;
+      }
+    }
+
+    // Patron class
+    class Patron {
+      constructor(name, id) {
+        this.name = name;
+        this.id = id;
+        this.borrowedBooks = [];
+      }
+
+      borrowBook(book) {
+        if (book.borrow() && this.borrowedBooks.length < 3) {
+          this.borrowedBooks.push(book);
+          return true;
+        }
+        return false;
+      }
+
+      returnBook(book) {
+        const index = this.borrowedBooks.indexOf(book);
+        if (index !== -1) {
+          book.returnBook();
+          this.borrowedBooks.splice(index, 1);
+          return true;
+        }
+        return false;
+      }
+    }
+
+    // Library class
+    class Library {
+      constructor() {
+        this.books = [];
+        this.patrons = [];
+      }
+
+      searchBooks(query) {
+        return this.books.filter(book => 
+          book.title.toLowerCase().includes(query) ||
+          book.author.toLowerCase().includes(query) ||
+          book.isbn.toLowerCase().includes(query)
+        );
+      }
+
+      addPatron(name, id) {
+        this.patrons.push(new Patron(name, id));
+      }
+
+      addBook(title, author, isbn) {
+        this.books.push(new Book(title, author, isbn));
+      }
+
+      removeBook(isbn) {
+        const index = this.books.findIndex(book => book.isbn === isbn);
+        if (index !== -1) {
+          this.books.splice(index, 1);
+          return true;
+        }
+        return false;
+      }
+
+      renderBooks() {
+        const booksElement = document.getElementById("books");
+        booksElement.innerHTML = "";
+        if (this.books.length === 0) {
+          booksElement.textContent = "No books available.";
+        } else {
+          const ul = document.createElement("ul");
+          this.books.forEach(book => {
+            const li = document.createElement("li");
+            li.textContent = `${book.title} by ${book.author} (ISBN: ${book.isbn})`;
+            ul.appendChild(li);
+          });
+          booksElement.appendChild(ul);
+        }
+      }
+
+      renderPatrons() {
+        const patronsElement = document.getElementById("patronList");
+        patronsElement.innerHTML = "";
+        if (this.patrons.length === 0) {
+          patronsElement.textContent = "No patrons available.";
+        } else {
+          const ul = document.createElement("ul");
+          this.patrons.forEach(patron => {
+            const li = document.createElement("li");
+            li.textContent = `${patron.name} (ID: ${patron.id})`;
+            ul.appendChild(li);
+          });
+          patronsElement.appendChild(ul);
+        }
+      }
+    }
+
+    const library = new Library();
+
+    // Event listeners
+    document.getElementById("addBookForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const title = document.getElementById("bookTitle").value;
+      const author = document.getElementById("bookAuthor").value;
+      const isbn = document.getElementById("bookIsbn").value;
+      library.addBook(title, author, isbn);
+      document.getElementById("addBookForm").reset();
+      library.renderBooks();
+    });
+
+    document.getElementById("removeBookForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const isbnToRemove = document.getElementById("isbnToRemove").value;
+      if (library.removeBook(isbnToRemove)) {
+        document.getElementById("removeBookForm").reset();
+        library.renderBooks();
+      } else {
+        alert("Book not found in the library.");
+      }
+    });
+
+    document.getElementById("searchButton").addEventListener("click", function() {
+      const searchInput = document.getElementById("searchInput").value.toLowerCase();
+      const searchResults = document.getElementById("searchResults");
+      searchResults.innerHTML = "";
+
+      const matchingBooks = library.searchBooks(searchInput);
+      if (matchingBooks.length === 0) {
+        searchResults.textContent = "No matching books found.";
+      } else {
+        const ul = document.createElement("ul");
+        matchingBooks.forEach(book => {
+          const li = document.createElement("li");
+          li.textContent = `${book.title} by ${book.author} (ISBN: ${book.isbn})`;
+          ul.appendChild(li);
+        });
+        searchResults.appendChild(ul);
+      }
+    });
+
+    document.getElementById("addPatronForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const name = document.getElementById("patronName").value;
+      const id = document.getElementById("patronID").value;
+      library.addPatron(name, id);
+      document.getElementById("addPatronForm").reset();
+      library.renderPatrons();
+    });
+  </script>
+</body>
+</html>
